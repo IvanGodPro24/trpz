@@ -1,16 +1,30 @@
 package model;
 
+import java.util.Map;
+
 public class HttpResponse {
     private int statusCode;
+    private String statusMessage;
+    private Map<String, String> headers;
     private String body;
 
-    public HttpResponse(int statusCode, String body) {
+    public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String body) {
         this.statusCode = statusCode;
+        this.statusMessage = statusMessage;
+        this.headers = headers;
         this.body = body;
     }
 
     public int getStatusCode() {
         return statusCode;
+    }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 
     public String getBody() {
@@ -19,6 +33,12 @@ public class HttpResponse {
 
     @Override
     public String toString() {
-        return statusCode + " " + body;
+        StringBuilder response = new StringBuilder();
+        response.append("HTTP/1.1 ").append(statusCode).append(" ").append(statusMessage).append("\n");
+        for (var entry : headers.entrySet()) {
+            response.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+        response.append("\n").append(body);
+        return response.toString();
     }
 }

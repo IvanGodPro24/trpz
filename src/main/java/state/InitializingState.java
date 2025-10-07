@@ -3,6 +3,7 @@ package state;
 import model.HttpRequest;
 import model.HttpResponse;
 import server.HttpServer;
+import java.util.HashMap;
 
 public class InitializingState implements IServerState {
     @Override
@@ -20,6 +21,12 @@ public class InitializingState implements IServerState {
     @Override
     public HttpResponse HandleRequest(HttpServer server, HttpRequest request) {
         System.out.println("Request ignored: server is initializing.");
-        return new HttpResponse(503, "Service Unavailable (initializing)");
+
+        return new HttpResponse(
+                503,
+                "Service Unavailable",
+                new HashMap<>(),
+                "Server is initializing, please wait."
+        );
     }
 }

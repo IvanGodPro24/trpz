@@ -16,7 +16,7 @@ public class Main {
 
         // Open
         HttpResponse r2 = server.HandleRequest(new HttpRequest("GET", "/about"));
-        System.out.println("Response2: " + r2);
+        System.out.println("Response2:\n" + r2);
 
         server.Stop();
 
