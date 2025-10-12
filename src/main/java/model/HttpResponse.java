@@ -1,5 +1,6 @@
 package model;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class HttpResponse {
@@ -11,7 +12,7 @@ public class HttpResponse {
     public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String body) {
         this.statusCode = statusCode;
         this.statusMessage = statusMessage;
-        this.headers = headers;
+        this.headers = Collections.unmodifiableMap(headers);
         this.body = body;
     }
 

@@ -1,6 +1,9 @@
 package builder;
 
 import model.HttpResponse;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 public class HttpResponseDirector {
     private final IHttpResponseBuilder builder;
@@ -14,15 +17,18 @@ public class HttpResponseDirector {
                 .setStatusCode(200)
                 .setHeader("Server", "JavaHTTP/1.0")
                 .setHeader("Content-Type", "text/html; charset=UTF-8")
+                .setHeader("Date", ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME))
                 .setBody(body)
                 .build();
     }
+
 
     public HttpResponse createErrorResponse(int code, String body) {
         return builder
                 .setStatusCode(code)
                 .setHeader("Server", "JavaHTTP/1.0")
                 .setHeader("Content-Type", "text/html; charset=UTF-8")
+                .setHeader("Date", ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME))
                 .setBody(body)
                 .build();
     }

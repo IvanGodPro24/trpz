@@ -2,11 +2,11 @@ package server;
 
 import model.HttpRequest;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 
 public class Statistics {
-    private List<HttpRequest> requests = new ArrayList<>();
+    private final List<HttpRequest> requests = new CopyOnWriteArrayList<>();
 
     public void LogRequest(HttpRequest req) {
         requests.add(req);
