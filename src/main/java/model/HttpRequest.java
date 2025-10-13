@@ -1,8 +1,8 @@
 package model;
 
 public class HttpRequest {
-    private String method;
-    private String url;
+    private final String method;
+    private final String url;
 
     public HttpRequest(String method, String url) {
         this.method = method;

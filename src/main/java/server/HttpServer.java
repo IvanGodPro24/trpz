@@ -7,7 +7,7 @@ import state.InitializingState;
 
 public class HttpServer {
     private IServerState state;
-    private int port;
+    private final int port;
     public Statistics Statistics = new Statistics();
 
     public HttpServer(int port) {

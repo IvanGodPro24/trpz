@@ -7,9 +7,8 @@ import java.util.Map;
 public class HttpResponseBuilder implements IHttpResponseBuilder {
     private int statusCode;
     private String statusMessage;
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
     private String body = "";
-
 
     @Override
     public IHttpResponseBuilder setStatusCode(int code) {

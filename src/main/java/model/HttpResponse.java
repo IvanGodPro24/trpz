@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.Map;
 
 public class HttpResponse {
-    private int statusCode;
-    private String statusMessage;
-    private Map<String, String> headers;
-    private String body;
+    private final int statusCode;
+    private final String statusMessage;
+    private final Map<String, String> headers;
+    private final String body;
 
     public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String body) {
         this.statusCode = statusCode;

@@ -5,7 +5,7 @@ import model.HttpResponse;
 import server.HttpServer;
 
 public class Main {
-    static void main(String[] args) {
+    static void main() {
         HttpServer server = new HttpServer(8080);
 
         // Initializing
