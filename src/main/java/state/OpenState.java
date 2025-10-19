@@ -1,9 +1,9 @@
 package state;
 
+import mediator.ServerMediator;
 import model.HttpRequest;
 import model.HttpResponse;
 import server.HttpServer;
-import server.RequestHandler;
 
 public class OpenState implements IServerState {
     @Override
@@ -19,8 +19,7 @@ public class OpenState implements IServerState {
 
     @Override
     public HttpResponse HandleRequest(HttpServer server, HttpRequest request) {
-        server.Statistics.LogRequest(request);
-        RequestHandler handler = new RequestHandler(server);
-        return handler.Handle(request);
+        ServerMediator mediator = server.getMediator();
+        return mediator.handleRequest(request);
     }
 }

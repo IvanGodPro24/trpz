@@ -1,12 +1,21 @@
 package httpserver;
 
+import mediator.ConcreteServerMediator;
+import mediator.ServerMediator;
 import model.HttpRequest;
 import model.HttpResponse;
 import server.HttpServer;
+import server.RequestHandler;
+import server.Statistics;
 
 public class Main {
     static void main() {
-        HttpServer server = new HttpServer(8080);
+        Statistics statistics = new Statistics();
+        RequestHandler handler = new RequestHandler(null);
+        HttpServer server = new HttpServer(8080, null);
+        ServerMediator mediator = new ConcreteServerMediator(server, handler, statistics);
+
+        server.setMediator(mediator);
 
         // Initializing
         HttpResponse r1 = server.HandleRequest(new HttpRequest("GET", "/home"));
