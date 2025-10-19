@@ -1,9 +1,9 @@
 package state;
 
+import factory.ErrorResponseCreator;
 import model.HttpRequest;
 import model.HttpResponse;
 import server.HttpServer;
-import java.util.HashMap;
 
 public class ClosingState implements IServerState {
     @Override
@@ -20,11 +20,10 @@ public class ClosingState implements IServerState {
     public HttpResponse HandleRequest(HttpServer server, HttpRequest request) {
         System.out.println("Request rejected: server is closing.");
 
-        return new HttpResponse(
+        ErrorResponseCreator factory = new ErrorResponseCreator();
+        return factory.createResponse(
                 503,
-                "Service Unavailable",
-                new HashMap<>(),
-                "Server is currently closing, please try again later."
+                "<h1>Server is currently closing, please try again later.</h1>"
         );
     }
 }

@@ -1,9 +1,9 @@
 package state;
 
+import factory.ErrorResponseCreator;
 import model.HttpRequest;
 import model.HttpResponse;
 import server.HttpServer;
-import java.util.HashMap;
 
 public class InitializingState implements IServerState {
     @Override
@@ -22,11 +22,10 @@ public class InitializingState implements IServerState {
     public HttpResponse HandleRequest(HttpServer server, HttpRequest request) {
         System.out.println("Request ignored: server is initializing.");
 
-        return new HttpResponse(
+        ErrorResponseCreator factory = new ErrorResponseCreator();
+        return factory.createResponse(
                 503,
-                "Service Unavailable",
-                new HashMap<>(),
-                "Server is initializing, please wait."
+                "<h1>Server is initializing, please wait.</h1>"
         );
     }
 }

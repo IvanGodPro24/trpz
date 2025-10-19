@@ -31,6 +31,7 @@ public class HttpResponseBuilder implements IHttpResponseBuilder {
     @Override
     public IHttpResponseBuilder setBody(String body) {
         this.body = body;
+        headers.put("Content-Length", String.valueOf(body.getBytes().length));
         return this;
     }
 

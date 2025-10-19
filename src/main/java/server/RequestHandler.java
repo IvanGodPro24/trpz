@@ -7,7 +7,7 @@ import model.HttpRequest;
 import model.HttpResponse;
 
 public class RequestHandler {
-    public RequestHandler(HttpServer server) {}
+    public RequestHandler() {}
 
     public HttpResponse Handle(HttpRequest req) {
         String url = req.getUrl();

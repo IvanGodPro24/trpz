@@ -13,6 +13,8 @@ public class ConcreteServerMediator implements ServerMediator {
     public ConcreteServerMediator(HttpServer server, RequestHandler handler, Statistics statistics) {
         this.handler = handler;
         this.statistics = statistics;
+
+        server.setMediator(this);
     }
 
     @Override
