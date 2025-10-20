@@ -1,5 +1,7 @@
 package server;
 
+import composite.HtmlComposite;
+import composite.HtmlElement;
 import factory.ErrorResponseCreator;
 import factory.HttpResponseCreator;
 import factory.SuccessResponseCreator;
@@ -12,9 +14,9 @@ public class RequestHandler {
     public HttpResponse Handle(HttpRequest req) {
         String url = req.getUrl();
         String body = switch (url) {
-            case "/home" -> "<h1>Welcome to Home!</h1>";
-            case "/about" -> "<h1>About us page.</h1>";
-            case "/contact" -> "<h1>Contact information here.</h1>";
+            case "/home" -> buildHomePage();
+            case "/about" -> buildAboutPage();
+            case "/contact" -> buildContactPage();
             default -> "<h1>404 Page Not Found</h1>";
         };
 
@@ -25,5 +27,32 @@ public class RequestHandler {
                 : new ErrorResponseCreator();
 
         return creator.createResponse(statusCode, body);
+    }
+
+    private String buildHomePage() {
+        HtmlComposite html = new HtmlComposite("html");
+        HtmlComposite body = new HtmlComposite("body");
+        body.add(new HtmlElement("h1", "Welcome to Home!"));
+        body.add(new HtmlElement("p", "This page is generated using the Composite pattern."));
+        html.add(body);
+        return html.render();
+    }
+
+    private String buildAboutPage() {
+        HtmlComposite html = new HtmlComposite("html");
+        HtmlComposite body = new HtmlComposite("body");
+        body.add(new HtmlElement("h1", "About Us"));
+        body.add(new HtmlElement("p", "This page demonstrates Composite usage for dynamic HTML."));
+        html.add(body);
+        return html.render();
+    }
+
+    private String buildContactPage() {
+        HtmlComposite html = new HtmlComposite("html");
+        HtmlComposite body = new HtmlComposite("body");
+        body.add(new HtmlElement("h1", "Contact information"));
+        body.add(new HtmlElement("p", "Email: contact@server.com"));
+        html.add(body);
+        return html.render();
     }
 }
