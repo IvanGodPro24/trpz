@@ -35,11 +35,12 @@ public class HttpResponse {
     @Override
     public String toString() {
         StringBuilder response = new StringBuilder();
-        response.append("HTTP/1.1 ").append(statusCode).append(" ").append(statusMessage).append("\n");
+        response.append("HTTP/1.1 ").append(statusCode).append(" ").append(statusMessage).append("\r\n");
         for (var entry : headers.entrySet()) {
-            response.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+            response.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
         }
-        response.append("\n").append(body);
+        response.append("\r\n");
+        if (body != null) response.append(body);
         return response.toString();
     }
 }

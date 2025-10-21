@@ -1,6 +1,8 @@
 package builder;
 
 import model.HttpResponse;
+
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +33,14 @@ public class HttpResponseBuilder implements IHttpResponseBuilder {
     @Override
     public IHttpResponseBuilder setBody(String body) {
         this.body = body;
-        headers.put("Content-Length", String.valueOf(body.getBytes().length));
+
+        if (body != null) {
+            int length = body.getBytes(StandardCharsets.UTF_8).length;
+            headers.put("Content-Length", String.valueOf(length));
+        } else {
+            headers.put("Content-Length", "0");
+        }
+
         return this;
     }
 

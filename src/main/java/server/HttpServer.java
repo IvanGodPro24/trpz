@@ -7,7 +7,7 @@ import state.IServerState;
 import state.InitializingState;
 
 public class HttpServer {
-    private IServerState state;
+    private volatile IServerState state;
     private final int port;
     private ServerMediator mediator;
 
@@ -17,7 +17,7 @@ public class HttpServer {
         this.mediator = mediator;
     }
 
-    public void SetState(IServerState newState) {
+    public synchronized void SetState(IServerState newState) {
         this.state = newState;
     }
 
