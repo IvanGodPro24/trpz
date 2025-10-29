@@ -1,5 +1,7 @@
 package server;
 
+import builder.HttpResponseBuilder;
+import builder.IHttpResponseBuilder;
 import composite.HtmlComposite;
 import composite.HtmlElement;
 import factory.ErrorResponseCreator;
@@ -34,19 +36,19 @@ public class RequestHandler {
             return creator.createResponse(200, respBody);
         }
 
-        if ("GET".equalsIgnoreCase(method) && "/sync    /stats".equalsIgnoreCase(url)) {
+        if ("GET".equalsIgnoreCase(method) && "/sync/stats".equalsIgnoreCase(url)) {
             String body = stats.toJsonTimestamps();
-            HttpResponseCreator creator = new SuccessResponseCreator();
-            HttpResponse response = creator.createResponse(200, body);
 
-            return new HttpResponse(response.statusCode(), response.statusMessage(),
-                    java.util.Map.of("Server", "JavaHTTP/1.0", "Content-Type", "application/json; charset=UTF-8",
-                            "Content-Length", String.valueOf(body.getBytes(java.nio.charset.StandardCharsets.UTF_8).length)),
-                    body);
+            IHttpResponseBuilder builder = new HttpResponseBuilder();
+            return builder
+                    .setStatusCode(200)
+                    .setHeader("Server", "JavaHTTP/1.0")
+                    .setHeader("Content-Type", "application/json; charset=UTF-8")
+                    .setBody(body)
+                    .build();
         }
 
-
-        String body = switch (url) {
+    String body = switch (url) {
             case "/home" -> buildHomePage();
             case "/about" -> buildAboutPage();
             case "/contact" -> buildContactPage();

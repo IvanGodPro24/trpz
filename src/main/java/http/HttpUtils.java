@@ -10,9 +10,8 @@ import java.util.LinkedHashMap;
  * - readLineCRLF: читає рядок до CRLF або LF з InputStream (повертає ISO-8859-1 рядок)
  * - readExactly: читає точно N байт
  * - readChunked: читає chunked-encoded body (повертає byte[])
- * - toPushback: обгортає InputStream в PushbackInputStream якщо потрібно
+ * - toPushback: обгортає InputStream в PushbackInputStream
  * - getHeaderIgnoreCase: пошук заголовка у Map незалежно від регістру
- * Використовувати ці методи і у PeerClient, і у HttpRequestParser.
  */
 public final class HttpUtils {
     private static final int DEFAULT_PUSHBACK = 1;

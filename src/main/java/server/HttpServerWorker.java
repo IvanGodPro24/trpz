@@ -1,5 +1,6 @@
 package server;
 
+import factory.ErrorResponseCreator;
 import http.HttpRequestParser;
 import model.HttpRequest;
 import model.HttpResponse;
@@ -28,7 +29,6 @@ public class HttpServerWorker implements Runnable {
     @Override
     public void run() {
         int requestsHandled = 0;
-        boolean keepAlive = true;
         int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT_MS;
         int maxRequests = DEFAULT_MAX_REQUESTS;
 
@@ -37,7 +37,7 @@ public class HttpServerWorker implements Runnable {
 
             clientSocket.setSoTimeout(keepAliveTimeout);
 
-            while (keepAlive && requestsHandled < maxRequests && !clientSocket.isClosed()) {
+            while (requestsHandled < maxRequests && !clientSocket.isClosed()) {
                 HttpRequest request;
                 try {
                     request = HttpRequestParser.parse(in);
@@ -53,16 +53,16 @@ public class HttpServerWorker implements Runnable {
 
                 HttpResponse response = server.HandleRequest(request);
                 if (response == null) {
-                    response = new HttpResponse(500, "Internal Server Error", Map.of("Content-Length", "0"), "");
+                    ErrorResponseCreator err = new ErrorResponseCreator();
+                    response = err.createResponse(500, "<h1>Internal Server Error</h1>");
                 }
 
                 // Визначаємо політику keep-alive по запиту та версії HTTP
-                String reqConnHeader = null;
-                if (request.headers() != null) {
-                    reqConnHeader = request.headers().get("Connection");
-                    if (reqConnHeader == null) {
-                        reqConnHeader = request.headers().get("connection");
-                    }
+                String reqConnHeader;
+                request.headers();
+                reqConnHeader = request.headers().get("Connection");
+                if (reqConnHeader == null) {
+                    reqConnHeader = request.headers().get("connection");
                 }
 
                 String reqVersion = request.version() == null ? "HTTP/1.1" : request.version();
