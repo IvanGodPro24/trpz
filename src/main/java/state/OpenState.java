@@ -1,5 +1,6 @@
 package state;
 
+import factory.ErrorResponseCreator;
 import mediator.ServerMediator;
 import model.HttpRequest;
 import model.HttpResponse;
@@ -20,6 +21,11 @@ public class OpenState implements IServerState {
     @Override
     public HttpResponse HandleRequest(HttpServer server, HttpRequest request) {
         ServerMediator mediator = server.getMediator();
+
+        if (mediator == null) {
+            ErrorResponseCreator factory = new ErrorResponseCreator();
+            return factory.createResponse(503, "<h1>Server not ready</h1>");
+        }
         return mediator.handleRequest(request);
     }
 }

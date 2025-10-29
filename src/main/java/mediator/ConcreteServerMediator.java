@@ -25,6 +25,6 @@ public class ConcreteServerMediator implements ServerMediator {
 
     @Override
     public void logRequest(HttpRequest request) {
-        statistics.LogRequest(request);
+        statistics.logRequest(request);
     }
 }

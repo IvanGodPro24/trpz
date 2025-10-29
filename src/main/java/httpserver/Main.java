@@ -1,35 +1,32 @@
 package httpserver;
 
-import mediator.ConcreteServerMediator;
-import mediator.ServerMediator;
-import model.HttpRequest;
-import model.HttpResponse;
-import server.HttpServer;
-import server.RequestHandler;
-import server.Statistics;
+import p2p.PeerNode;
+import java.util.List;
 
 public class Main {
     static void main() {
-        Statistics statistics = new Statistics();
-        RequestHandler handler = new RequestHandler();
-        HttpServer server = new HttpServer(8080, null);
-        ServerMediator mediator = new ConcreteServerMediator(server, handler, statistics);
+        PeerNode nodeA = new PeerNode("PeerA", 8080, List.of("localhost:8081"));
+        PeerNode nodeB = new PeerNode("PeerB", 8081, List.of("localhost:8080"));
 
-        // Initializing
-        HttpResponse r1 = server.HandleRequest(new HttpRequest("GET", "/home"));
-        System.out.println("Response1:\n" + r1 + "\n");
+        nodeA.start();
+        nodeB.start();
 
-        server.Start();
+//        nodeA.syncStatsToPeersPost();
 
-        // Open
-        HttpResponse r2 = server.HandleRequest(new HttpRequest("GET", "/about"));
-        System.out.println("Response2:\n" + r2 + "\n");
 
-        server.Stop();
+//        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 
-        // Closing
-        HttpResponse r3 = server.HandleRequest(new HttpRequest("GET", "/contact"));
-        System.out.println("Response3:\n" + r3);
+//        nodeB.syncWithPeers();
+
+        // PeerA надсилає запит до PeerB
+//        nodeA.broadcastRequest("/home");
+
+//        nodeA.syncWithPeers();
+
+        // PeerB надсилає запит до PeerA
+//        nodeB.broadcastRequest("/about");
+
+//        nodeA.stop();
+//        nodeB.stop();
     }
 }
-

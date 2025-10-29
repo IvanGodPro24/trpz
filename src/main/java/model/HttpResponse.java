@@ -3,33 +3,12 @@ package model;
 import java.util.Collections;
 import java.util.Map;
 
-public class HttpResponse {
-    private final int statusCode;
-    private final String statusMessage;
-    private final Map<String, String> headers;
-    private final String body;
-
+public record HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String body) {
     public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String body) {
         this.statusCode = statusCode;
         this.statusMessage = statusMessage;
-        this.headers = Collections.unmodifiableMap(headers);
+        this.headers = headers == null ? Collections.emptyMap() : Collections.unmodifiableMap(headers);
         this.body = body;
-    }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public String getStatusMessage() {
-        return statusMessage;
-    }
-
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
-    public String getBody() {
-        return body;
     }
 
     @Override
