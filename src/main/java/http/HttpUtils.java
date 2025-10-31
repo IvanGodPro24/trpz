@@ -1,9 +1,9 @@
 package http;
 
 import java.io.*;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 /**
  * Утилітні методи для роботи з HTTP-потоками:
@@ -92,7 +92,6 @@ public final class HttpUtils {
             byte[] chunk = readExactly(in, chunkSize);
             out.write(chunk);
 
-            // after chunk data there should be CRLF; consume it (may be \r\n or \n)
             int c1 = in.read();
             if (c1 == '\r') {
                 int c2 = in.read();
@@ -147,7 +146,6 @@ public final class HttpUtils {
         } else if (te != null && te.equalsIgnoreCase("chunked")) {
             return readChunked(in);
         } else {
-            // read until EOF (Connection: close)
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] tmp = new byte[8192];
             int r;
@@ -181,9 +179,85 @@ public final class HttpUtils {
         } else if (te != null && te.equalsIgnoreCase("chunked")) {
             return readChunked(in);
         } else {
-            // No explicit length and not chunked — for requests we must NOT read until EOF.
             return null;
         }
     }
 
+    public static Map<String, Object> parseFormUrlEncoded(String body) {
+        Map<String, Object> ctx = new HashMap<>();
+        if (body == null || body.isBlank()) return ctx;
+        for (String pair : body.split("&")) {
+            if (pair.isBlank()) continue;
+            String[] kv = pair.split("=", 2);
+            String k = urlDecode(kv[0]);
+            String v = kv.length > 1 ? urlDecode(kv[1]) : "";
+            ctx.put(k, v);
+        }
+        return ctx;
+    }
+
+    public static Map<String, Object> parseQueryToContext(String rawUrl) {
+        Map<String, Object> ctx = new HashMap<>();
+        if (rawUrl == null) return ctx;
+        int q = rawUrl.indexOf('?');
+        if (q >= 0 && q + 1 < rawUrl.length()) {
+            String query = rawUrl.substring(q + 1);
+            for (String pair : query.split("&")) {
+                if (pair.isBlank()) continue;
+                String[] kv = pair.split("=", 2);
+                String k = urlDecode(kv[0]);
+                String v = kv.length > 1 ? urlDecode(kv[1]) : "";
+                if (v.contains(",")) {
+                    String[] parts = v.split(",");
+                    java.util.List<String> list = new java.util.ArrayList<>(parts.length);
+                    for (String p : parts) {
+                        String t = p == null ? "" : p.trim();
+                        if (!t.isEmpty()) list.add(t);
+                    }
+                    ctx.put(k, list);
+                } else {
+                    ctx.put(k, tryParseNumberOrString(v));
+                }
+            }
+        }
+        return ctx;
+    }
+
+    public static Map<String, Object> parseQueryToContext(model.HttpRequest req) {
+        return parseQueryToContext(req == null ? null : req.url());
+    }
+
+    public static Object tryParseNumberOrString(String v) {
+        if (v == null) return null;
+        if (v.matches("-?\\d+")) {
+            try {
+                return Long.parseLong(v);
+            } catch (Exception ignored) {}
+        }
+        if (v.matches("-?\\d+\\.\\d+")) {
+            try {
+                return Double.parseDouble(v);
+            } catch (Exception ignored) {}
+        }
+        return v;
+    }
+
+
+    public static String safeToString(Object o) {
+        return o == null ? "" : o.toString();
+    }
+
+    public static String escapeHtml(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private static String urlDecode(String s) {
+        if (s == null) return "";
+        try {
+            return URLDecoder.decode(s, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ex) {
+            return s;
+        }
+    }
 }

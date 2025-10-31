@@ -1,0 +1,24 @@
+<html>
+  <body>
+    <h1>Thank you{% if name %}, {{ name }}{% endif %}!</h1>
+
+    {% if email %}
+      <p>We will reply to: <strong>{{ email }}</strong></p>
+    {% endif %}
+
+    <h2>Your message</h2>
+
+    {% if message %}
+      <p>{{ message }}</p>
+    {% else %}
+      <p><em>No message provided.</em></p>
+    {% endif %}
+
+    <p>Received at: {{ receivedAt }}</p>
+
+    <p>
+      <a href="/templates/contact.chtml">Send another message</a> |
+      <a href="/home">Home</a>
+    </p>
+  </body>
+</html>

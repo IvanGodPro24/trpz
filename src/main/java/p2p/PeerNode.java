@@ -2,6 +2,7 @@ package p2p;
 
 import db.MongoDBConnection;
 import db.StatisticsRepository;
+import db.RequestsRepository;
 import mediator.ConcreteServerMediator;
 import mediator.ServerMediator;
 import model.HttpResponse;
@@ -25,13 +26,18 @@ public class PeerNode {
 
         MongoDBConnection.initialize();
 
-        StatisticsRepository repository = new StatisticsRepository(
+        StatisticsRepository statisticsRepo = new StatisticsRepository(
                 MongoDBConnection.getClient(),
                 MongoDBConnection.getDatabaseName()
         );
 
-        this.stats = new Statistics(repository);
-        RequestHandler handler = new RequestHandler(this.stats);
+        RequestsRepository requestsRepo = new RequestsRepository(
+                MongoDBConnection.getClient(),
+                MongoDBConnection.getDatabaseName()
+        );
+
+        this.stats = new Statistics(statisticsRepo);
+        RequestHandler handler = new RequestHandler(this.stats, requestsRepo);
         this.server = new HttpServer(port, null);
         ServerMediator mediator = new ConcreteServerMediator(server, handler, stats);
         this.client = new PeerClient();

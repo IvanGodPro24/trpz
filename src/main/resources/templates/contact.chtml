@@ -1,0 +1,24 @@
+<html>
+  <body>
+    <h1>Contact us</h1>
+
+    <form method="post" action="/contact">
+      <label for="name">Name:</label><br/>
+      <input id="name" name="name" type="text" value="{{ name }}" /><br/><br/>
+
+      <label for="email">Email:</label><br/>
+      <input id="email" name="email" type="email" value="{{ email }}" /><br/><br/>
+
+      <label for="message">Message:</label><br/>
+      <textarea id="message" name="message" rows="6" cols="40">{{ message }}</textarea><br/><br/>
+
+      <button type="submit">Send</button>
+    </form>
+
+    {% if info %}
+      <p><em>{{ info }}</em></p>
+    {% endif %}
+
+    <p><a href="/home">Back to home</a></p>
+  </body>
+</html>
