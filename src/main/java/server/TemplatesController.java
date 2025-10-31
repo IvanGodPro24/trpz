@@ -3,7 +3,7 @@ package server;
 import chtml.ChtmlEngine;
 import factory.ErrorResponseCreator;
 import factory.HttpResponseCreator;
-import factory.SuccessResponseCreator;
+import factory.TemplateResponseCreator;
 import model.HttpRequest;
 import model.HttpResponse;
 
@@ -31,7 +31,7 @@ public class TemplatesController implements IController {
             ctx.putIfAbsent("count", 0);
             String out = ChtmlEngine.render(tplName, ctx);
 
-            HttpResponseCreator creator = new SuccessResponseCreator();
+            HttpResponseCreator creator = new TemplateResponseCreator();
             return creator.createResponse(200, out);
         } catch (Exception e) {
             ErrorResponseCreator err = new ErrorResponseCreator();

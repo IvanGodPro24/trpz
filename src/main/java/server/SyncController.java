@@ -1,10 +1,9 @@
 package server;
 
 import factory.HttpResponseCreator;
+import factory.StaticFileResponseCreator;
 import model.HttpRequest;
 import model.HttpResponse;
-import builder.HttpResponseBuilder;
-import builder.IHttpResponseBuilder;
 import factory.ErrorResponseCreator;
 import factory.SuccessResponseCreator;
 
@@ -20,13 +19,8 @@ public class SyncController implements IController {
         String method = req.method().toUpperCase();
         if ("GET".equals(method)) {
             String body = stats.toJsonTimestamps();
-            IHttpResponseBuilder builder = new HttpResponseBuilder();
-            return builder
-                    .setStatusCode(200)
-                    .setHeader("Server", "JavaHTTP/1.0")
-                    .setHeader("Content-Type", "application/json; charset=UTF-8")
-                    .setBody(body)
-                    .build();
+            HttpResponseCreator jsonCreator = new StaticFileResponseCreator("application/json");
+            return jsonCreator.createResponse(200, body);
         } else if ("POST".equals(method)) {
             String body = req.body();
             int added = 0;
