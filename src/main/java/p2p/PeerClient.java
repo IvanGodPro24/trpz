@@ -99,6 +99,6 @@ public class PeerClient {
         byte[] bodyBytes = readBodyBytes(rawIn, headers);
         String body = bodyBytes == null ? null : new String(bodyBytes, StandardCharsets.UTF_8);
 
-        return new HttpResponse(statusCode, statusMsg, headers, body);
+        return new HttpResponse(statusCode, statusMsg, headers, body, bodyBytes);
     }
 }

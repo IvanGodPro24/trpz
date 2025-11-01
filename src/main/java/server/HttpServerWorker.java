@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import static http.HttpUtils.getHeaderIgnoreCase;
+
 public class HttpServerWorker implements Runnable {
     private final Socket clientSocket;
     private final HttpServer server;
@@ -58,13 +60,7 @@ public class HttpServerWorker implements Runnable {
                 }
 
                 // Визначаємо політику keep-alive по запиту та версії HTTP
-                String reqConnHeader;
-                request.headers();
-                reqConnHeader = request.headers().get("Connection");
-                if (reqConnHeader == null) {
-                    reqConnHeader = request.headers().get("connection");
-                }
-
+                String reqConnHeader = getHeaderIgnoreCase(request.headers(), "Connection");
                 String reqVersion = request.version() == null ? "HTTP/1.1" : request.version();
 
                 boolean clientWantsClose = false;
@@ -104,19 +100,45 @@ public class HttpServerWorker implements Runnable {
                 }
 
                 if (!newHeaders.containsKey("Content-Length")) {
-                    byte[] bodyBytes = response.body() == null ? new byte[0] : response.body().getBytes(StandardCharsets.UTF_8);
-                    newHeaders.put("Content-Length", String.valueOf(bodyBytes.length));
+                    int len;
+                    if (response.bodyBytes() != null) {
+                        len = response.bodyBytes().length;
+                    } else if (response.body() != null) {
+                        len = response.body().getBytes(StandardCharsets.UTF_8).length;
+                    } else {
+                        len = 0;
+                    }
+                    newHeaders.put("Content-Length", String.valueOf(len));
                 }
 
                 HttpResponse responseToSend = new HttpResponse(
                         response.statusCode(),
                         response.statusMessage(),
                         newHeaders,
-                        response.body()
+                        response.body(),
+                        response.bodyBytes()
                 );
 
-                byte[] respBytes = responseToSend.toString().getBytes(StandardCharsets.UTF_8);
-                out.write(respBytes);
+                StringBuilder headerBuilder = new StringBuilder();
+                headerBuilder.append("HTTP/1.1 ").append(responseToSend.statusCode())
+                        .append(" ").append(responseToSend.statusMessage()).append("\r\n");
+                for (var e : responseToSend.headers().entrySet()) {
+                    headerBuilder.append(e.getKey()).append(": ").append(e.getValue()).append("\r\n");
+                }
+                headerBuilder.append("\r\n");
+
+                byte[] headerBytes = headerBuilder.toString().getBytes(StandardCharsets.UTF_8);
+                out.write(headerBytes);
+
+                if (responseToSend.bodyBytes() != null) {
+                    out.write(responseToSend.bodyBytes());
+                } else {
+                    String bodyText = responseToSend.body();
+                    if (bodyText != null && !bodyText.isEmpty()) {
+                        out.write(bodyText.getBytes(StandardCharsets.UTF_8));
+                    }
+                }
+
                 out.flush();
 
                 if (!willKeepAlive) {

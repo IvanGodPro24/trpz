@@ -22,8 +22,7 @@ public class TemplatesController implements IController {
         String tplName = tplPart.replaceAll("\\.\\./", "").replaceAll("^/+", "");
         try {
             tplName = java.net.URLDecoder.decode(tplName, java.nio.charset.StandardCharsets.UTF_8);
-        }
-        catch (IllegalArgumentException ignored) {}
+        } catch (IllegalArgumentException ignored) {}
 
         try {
             Map<String, Object> ctx = parseQueryToContext(req);

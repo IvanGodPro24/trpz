@@ -13,6 +13,9 @@ public class RequestHandler {
         // templates
         this.router.registerPrefix("GET", "/templates/", new TemplatesController());
 
+        // static files
+        this.router.registerPrefix("GET", "/static/", new StaticFilesController());
+
         // sync stats
         SyncController sync = new SyncController(stats);
         this.router.registerExact("GET", "/sync/stats", sync);

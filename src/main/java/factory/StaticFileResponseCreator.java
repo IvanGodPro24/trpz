@@ -17,18 +17,15 @@ public class StaticFileResponseCreator extends HttpResponseCreator {
     }
 
     public StaticFileResponseCreator(String mimeType, String serverName) {
-        this.mimeType = mimeType == null || mimeType.isBlank() ? "application/octet-stream" : mimeType;
+        this.mimeType = (mimeType == null || mimeType.isBlank()) ? "application/octet-stream" : mimeType;
         this.serverName = serverName == null ? "JavaHTTP/1.0" : serverName;
     }
 
     @Override
     public HttpResponse createResponse(int statusCode, String body) {
         IHttpResponseBuilder builder = new HttpResponseBuilder();
-        String ct = mimeType;
-        String lower = mimeType.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("text/") || lower.contains("json") || lower.contains("xml") || lower.contains("html")) {
-            if (!ct.contains("charset")) ct = ct + "; charset=UTF-8";
-        }
+        String ct = normalizeContentTypeForText(mimeType);
+
         return builder
                 .setStatusCode(statusCode)
                 .setHeader("Server", serverName)
@@ -36,5 +33,26 @@ public class StaticFileResponseCreator extends HttpResponseCreator {
                 .setHeader("Date", ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME))
                 .setBody(body)
                 .build();
+    }
+
+    public HttpResponse createResponse(int statusCode, byte[] bodyBytes) {
+        IHttpResponseBuilder builder = new HttpResponseBuilder();
+        String ct = normalizeContentTypeForText(mimeType);
+
+        return builder
+                .setStatusCode(statusCode)
+                .setHeader("Server", serverName)
+                .setHeader("Content-Type", ct)
+                .setHeader("Date", ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME))
+                .setBodyBytes(bodyBytes)
+                .build();
+    }
+
+    private String normalizeContentTypeForText(String ct) {
+        String lower = ct.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("text/") || lower.contains("json") || lower.contains("xml") || lower.contains("html")) {
+            if (!ct.contains("charset")) ct = ct + "; charset=UTF-8";
+        }
+        return ct;
     }
 }

@@ -4,7 +4,7 @@ import chtml.ChtmlEngine;
 import db.RequestsRepository;
 import factory.ErrorResponseCreator;
 import factory.HttpResponseCreator;
-import factory.SuccessResponseCreator;
+import factory.TemplateResponseCreator;
 import model.HttpRequest;
 import model.HttpResponse;
 
@@ -29,7 +29,7 @@ public class ContactController implements IController {
                 Map<String, Object> ctx = new HashMap<>();
                 String out = ChtmlEngine.render("contact.chtml", ctx);
 
-                HttpResponseCreator creator = new SuccessResponseCreator();
+                HttpResponseCreator creator = new TemplateResponseCreator();
                 return creator.createResponse(200, out);
             } catch (Exception e) {
                 ErrorResponseCreator err = new ErrorResponseCreator();
@@ -57,7 +57,7 @@ public class ContactController implements IController {
                 ctx.put("message", message);
                 try {
                     String out = ChtmlEngine.render("contact.chtml", ctx);
-                    HttpResponseCreator creator = new SuccessResponseCreator();
+                    HttpResponseCreator creator = new TemplateResponseCreator();
                     return creator.createResponse(400, out);
                 } catch (Exception e) {
                     ErrorResponseCreator err = new ErrorResponseCreator();
@@ -83,8 +83,7 @@ public class ContactController implements IController {
 
             try {
                 String out = ChtmlEngine.render("contact_response.chtml", ctx);
-
-                HttpResponseCreator creator = new SuccessResponseCreator();
+                HttpResponseCreator creator = new TemplateResponseCreator();
                 return creator.createResponse(200, out);
             } catch (Exception e) {
                 ErrorResponseCreator err = new ErrorResponseCreator();
