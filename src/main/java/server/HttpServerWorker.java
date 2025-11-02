@@ -2,6 +2,7 @@ package server;
 
 import factory.ErrorResponseCreator;
 import http.HttpRequestParser;
+import http.HttpResponseSerializer;
 import model.HttpRequest;
 import model.HttpResponse;
 
@@ -119,27 +120,15 @@ public class HttpServerWorker implements Runnable {
                         response.bodyBytes()
                 );
 
-                StringBuilder headerBuilder = new StringBuilder();
-                headerBuilder.append("HTTP/1.1 ").append(responseToSend.statusCode())
-                        .append(" ").append(responseToSend.statusMessage()).append("\r\n");
-                for (var e : responseToSend.headers().entrySet()) {
-                    headerBuilder.append(e.getKey()).append(": ").append(e.getValue()).append("\r\n");
-                }
-                headerBuilder.append("\r\n");
-
-                byte[] headerBytes = headerBuilder.toString().getBytes(StandardCharsets.UTF_8);
-                out.write(headerBytes);
-
-                if (responseToSend.bodyBytes() != null) {
-                    out.write(responseToSend.bodyBytes());
-                } else {
-                    String bodyText = responseToSend.body();
-                    if (bodyText != null && !bodyText.isEmpty()) {
-                        out.write(bodyText.getBytes(StandardCharsets.UTF_8));
-                    }
+                try {
+                    byte[] respBytes = HttpResponseSerializer.serialize(responseToSend);
+                    out.write(respBytes);
+                    out.flush();
+                } catch (IOException e) {
+                    System.err.println("Failed to serialize response: " + e.getMessage());
+                    break;
                 }
 
-                out.flush();
 
                 if (!willKeepAlive) {
                     break;
@@ -148,7 +137,7 @@ public class HttpServerWorker implements Runnable {
                 clientSocket.setSoTimeout(keepAliveTimeout);
             }
         } catch (SocketTimeoutException ste) {
-            // Таймаут очікування наступного запиту — просто закриваємо з'єднання
+            // Таймаут очікування наступного запиту — закриваємо з'єднання
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
         } finally {
