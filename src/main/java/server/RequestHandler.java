@@ -25,6 +25,8 @@ public class RequestHandler {
         ContactController contact = new ContactController(requestsRepo);
         this.router.registerExact("GET", "/contact", contact);
         this.router.registerExact("POST", "/contact", contact);
+        this.router.registerExact("PUT", "/contact", contact);
+        this.router.registerExact("DELETE", "/contact", contact);
 
         // static pages
         StaticPagesController staticPages = new StaticPagesController(stats);
