@@ -5,14 +5,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-/**
- * Утилітні методи для роботи з HTTP-потоками:
- * - readLineCRLF: читає рядок до CRLF або LF з InputStream (повертає ISO-8859-1 рядок)
- * - readExactly: читає точно N байт
- * - readChunked: читає chunked-encoded body (повертає byte[])
- * - toPushback: обгортає InputStream в PushbackInputStream
- * - getHeaderIgnoreCase: пошук заголовка у Map незалежно від регістру
- */
 public final class HttpUtils {
     private static final int DEFAULT_PUSHBACK = 1;
 
@@ -23,10 +15,6 @@ public final class HttpUtils {
         return new PushbackInputStream(in, DEFAULT_PUSHBACK);
     }
 
-    /**
-     * Читає рядок до CRLF або LF з InputStream. Повертає null на EOF.
-     * Декодує байти як ISO_8859_1 (RFC для заголовків).
-     */
     public static String readLineCRLF(InputStream in) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int b;
@@ -46,9 +34,6 @@ public final class HttpUtils {
         return baos.toString(StandardCharsets.ISO_8859_1);
     }
 
-    /**
-     * Читає точно len байт з InputStream. Кидає IOException при EOF до завершення.
-     */
     public static byte[] readExactly(InputStream in, int len) throws IOException {
         byte[] buf = new byte[len];
         int pos = 0;
@@ -60,10 +45,6 @@ public final class HttpUtils {
         return buf;
     }
 
-    /**
-     * Прочитати chunked-encoded body з InputStream. Повертає масив байт (не строку).
-     * Реалізація читає chunk-size lines використовуючи readLineCRLF.
-     */
     public static byte[] readChunked(InputStream inRaw) throws IOException {
         InputStream in = toPushback(inRaw);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -81,11 +62,6 @@ public final class HttpUtils {
                 throw new IOException("Invalid chunk size: " + sizeLine);
             }
             if (chunkSize == 0) {
-                // trailing headers (optional) read until blank line
-                String line;
-                while ((line = readLineCRLF(in)) != null && !line.isEmpty()) {
-                    // ignore for now
-                }
                 break;
             }
 
@@ -98,8 +74,6 @@ public final class HttpUtils {
                 if (c2 != '\n' && c2 != -1) {
                     if (in instanceof PushbackInputStream) ((PushbackInputStream) in).unread(c2);
                 }
-            } else if (c1 == '\n') {
-                // ok
             } else if (c1 != -1) {
                 if (in instanceof PushbackInputStream) ((PushbackInputStream) in).unread(c1);
             }
@@ -156,13 +130,6 @@ public final class HttpUtils {
         }
     }
 
-    /**
-     * Читати тіло **HTTP-запиту** (серверна сторона).
-     * Читає тільки коли:
-     *  - є Content-Length > 0 (тоді читає рівно len байт)
-     *  - або Transfer-Encoding: chunked (тоді читає chunked)
-     * В іншому випадку повертає null (означає — тіла немає / не читати до EOF).
-     */
     public static byte[] readRequestBodyBytes(InputStream in, Map<String,String> headers) throws IOException {
         String cl = getHeaderIgnoreCase(headers, "Content-Length");
         String te = getHeaderIgnoreCase(headers, "Transfer-Encoding");
@@ -259,5 +226,26 @@ public final class HttpUtils {
         } catch (IllegalArgumentException ex) {
             return s;
         }
+    }
+
+    public static Map<String, Object> tryParseJsonFlat(String raw) {
+        Map<String, Object> m = new HashMap<>();
+        if (raw == null) return m;
+        String s = raw.trim();
+        if (s.isEmpty()) return m;
+        if (s.startsWith("{")) s = s.substring(1);
+        if (s.endsWith("}")) s = s.substring(0, s.length() - 1);
+        String[] pairs = s.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        for (String p : pairs) {
+            String[] kv = p.split(":", 2);
+            if (kv.length != 2) continue;
+            String k = kv[0].trim();
+            String v = kv[1].trim();
+            if (k.startsWith("\"") && k.endsWith("\"")) k = k.substring(1, k.length() - 1);
+            if (v.startsWith("\"") && v.endsWith("\"")) v = v.substring(1, v.length() - 1);
+            v = v.replace("\\\"", "\"").replace("\\n", "\n").replace("\\r", "\r").replace("\\\\", "\\");
+            m.put(k, v);
+        }
+        return m;
     }
 }

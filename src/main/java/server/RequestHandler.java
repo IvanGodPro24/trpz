@@ -3,11 +3,12 @@ package server;
 import db.RequestsRepository;
 import model.HttpRequest;
 import model.HttpResponse;
+import p2p.PeerNetwork;
 
 public class RequestHandler {
     private final Router router;
 
-    public RequestHandler(Statistics stats, RequestsRepository requestsRepo) {
+    public RequestHandler(Statistics stats, RequestsRepository requestsRepo, PeerNetwork peerNetwork) {
         this.router = new Router();
 
         // templates
@@ -20,6 +21,13 @@ public class RequestHandler {
         SyncController sync = new SyncController(stats);
         this.router.registerExact("GET", "/sync/stats", sync);
         this.router.registerExact("POST", "/sync/stats", sync);
+
+        if (peerNetwork != null) {
+            PeersController pc = new PeersController(peerNetwork);
+            this.router.registerExact("GET", "/peers", pc);
+            this.router.registerExact("POST", "/peers", pc);
+            this.router.registerExact("DELETE", "/peers", pc);
+        }
 
         // contact
         ContactController contact = new ContactController(requestsRepo);

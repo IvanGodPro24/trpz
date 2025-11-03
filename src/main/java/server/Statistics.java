@@ -88,6 +88,17 @@ public class Statistics {
         return "{\"timestamps\":[" + body + "]}";
     }
 
+    public String toJsonTimestampsLimited(int n) {
+        if (n <= 0) return "{\"timestamps\":[]}";
+        ArrayList<Long> last = new ArrayList<>(n);
+        Iterator<Long> it = ids.descendingIterator();
+        while (it.hasNext() && last.size() < n) last.add(it.next());
+        Collections.reverse(last);
+        String body = last.stream().map(String::valueOf).collect(Collectors.joining(","));
+        return "{\"timestamps\":[" + body + "]}";
+    }
+
+
     private long generateId() {
         long ts = System.currentTimeMillis();
         long seq = seqCounter.getAndIncrement() & SEQ_MASK;
