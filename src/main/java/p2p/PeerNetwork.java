@@ -51,35 +51,20 @@ public class PeerNetwork {
     public void addPeer(String hostPort, boolean persist) {
         if (hostPort == null || hostPort.isBlank()) return;
 
-        String[] parts = hostPort.split(":", 2);
-        String rawHost = parts[0];
-        int port = parts.length > 1 ? parsePort(parts[1]) : 80;
+        String normalizedAddr = normalizeHostPort(hostPort);
+        if (normalizedAddr == null) return;
 
-        String normalizedHost = rawHost;
-        try {
-            InetAddress addr = InetAddress.getByName(rawHost);
-            if (addr != null && addr.getHostAddress() != null) normalizedHost = addr.getHostAddress();
-        } catch (UnknownHostException ignored) {}
-
-        String normalizedAddr = normalizedHost + ":" + port;
-
-        PeerInfo self = this.selfInfo;
-        if (self != null) {
-            String selfNormalized = self.host;
-            try {
-                InetAddress s = InetAddress.getByName(self.host);
-                if (s != null && s.getHostAddress() != null) selfNormalized = s.getHostAddress();
-            } catch (UnknownHostException ignored) {}
-            selfNormalized = selfNormalized + ":" + self.port;
-
-            if (normalizedAddr.equals(selfNormalized) || hostPort.equals(self.toAddress())) {
-                return;
-            }
+        if (isSelfNormalized(normalizedAddr)) {
+            return;
         }
 
         if (peers.containsKey(normalizedAddr)) return;
 
-        PeerInfo p = new PeerInfo(normalizedHost, port);
+        String[] parts = normalizedAddr.split(":", 2);
+        String host = parts[0];
+        int port = parsePort(parts[1]);
+
+        PeerInfo p = new PeerInfo(host, port);
         peers.put(normalizedAddr, p);
 
         if (persist && peersRepo != null) peersRepo.savePeer(normalizedAddr);
@@ -95,14 +80,53 @@ public class PeerNetwork {
     }
 
     public boolean removePeer(String hostPort) {
-        PeerInfo removed = peers.remove(hostPort);
-        boolean ok = removed != null;
-        if (ok && peersRepo != null) peersRepo.deletePeer(hostPort);
+        if (hostPort == null || hostPort.isBlank()) return false;
+
+        String normalizedAddr = normalizeHostPort(hostPort);
+        boolean ok = false;
+
+        if (normalizedAddr != null) {
+            PeerInfo removed = peers.remove(normalizedAddr);
+            ok = removed != null;
+            if (ok && peersRepo != null) peersRepo.deletePeer(normalizedAddr);
+        }
+
+        if (!ok) {
+            PeerInfo removed = peers.remove(hostPort);
+            if (removed != null) {
+                ok = true;
+                if (peersRepo != null) peersRepo.deletePeer(hostPort);
+            }
+        }
+
         return ok;
     }
 
     public List<PeerInfo> listPeers() {
         return new ArrayList<>(peers.values());
+    }
+
+    private String normalizeHostPort(String hostPort) {
+        if (hostPort == null || hostPort.isBlank()) return null;
+        String[] parts = hostPort.split(":", 2);
+        String rawHost = parts[0].trim();
+        String portPart = parts.length > 1 ? parts[1].trim() : "80";
+        int port = parsePort(portPart);
+
+        String normalizedHost = rawHost;
+        try {
+            InetAddress addr = InetAddress.getByName(rawHost);
+            if (addr != null && addr.getHostAddress() != null) normalizedHost = addr.getHostAddress();
+        } catch (UnknownHostException ignored) {}
+
+        return normalizedHost + ":" + port;
+    }
+
+    private boolean isSelfNormalized(String normalizedAddr) {
+        PeerInfo self = this.selfInfo;
+        if (self == null || normalizedAddr == null) return false;
+        String selfNormalized = normalizeHostPort(self.toAddress());
+        return selfNormalized != null && selfNormalized.equals(normalizedAddr);
     }
 
     // sync: schedule periodic job
