@@ -8,6 +8,7 @@ import model.HttpResponse;
 import events.EventBus;
 import events.RequestEvent;
 import events.ResponseEvent;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +25,54 @@ public class HttpServerWorker implements Runnable {
     private final Socket clientSocket;
     private final HttpServer server;
 
-    private static final int DEFAULT_KEEP_ALIVE_TIMEOUT_MS = 10_000;
-    private static final int DEFAULT_MAX_REQUESTS = 100;
+    private static final int FALLBACK_KEEP_ALIVE_TIMEOUT_MS = 10_000;
+    private static final int FALLBACK_MAX_REQUESTS = 100;
+
+    private static final String ENV_KEEP_ALIVE_MS = "KEEP_ALIVE_TIMEOUT_MS";
+    private static final String ENV_MAX_REQUESTS = "MAX_REQUESTS_PER_CONNECTION";
+
+    private static final int DEFAULT_KEEP_ALIVE_TIMEOUT_MS;
+    private static final int DEFAULT_MAX_REQUESTS;
+
+    static {
+        int keepAlive = FALLBACK_KEEP_ALIVE_TIMEOUT_MS;
+        int maxReq = FALLBACK_MAX_REQUESTS;
+
+        try {
+            Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+            String ka = dotenv.get(ENV_KEEP_ALIVE_MS);
+            String mr = dotenv.get(ENV_MAX_REQUESTS);
+
+            if (ka != null && !ka.isBlank()) {
+                try {
+                    int parsed = Integer.parseInt(ka.trim());
+                    if (parsed > 0) keepAlive = parsed;
+                    else System.err.println("Invalid " + ENV_KEEP_ALIVE_MS + " , using fallback " + FALLBACK_KEEP_ALIVE_TIMEOUT_MS);
+                } catch (NumberFormatException nfe) {
+                    System.err.println("Failed to parse " + ENV_KEEP_ALIVE_MS + ": " + nfe.getMessage() + " — using fallback " + FALLBACK_KEEP_ALIVE_TIMEOUT_MS);
+                }
+            } else {
+                System.out.println(ENV_KEEP_ALIVE_MS + " not set, using default " + FALLBACK_KEEP_ALIVE_TIMEOUT_MS);
+            }
+
+            if (mr != null && !mr.isBlank()) {
+                try {
+                    int parsed = Integer.parseInt(mr.trim());
+                    if (parsed > 0) maxReq = parsed;
+                    else System.err.println("Invalid " + ENV_MAX_REQUESTS + ", using fallback " + FALLBACK_MAX_REQUESTS);
+                } catch (NumberFormatException nfe) {
+                    System.err.println("Failed to parse " + ENV_MAX_REQUESTS + ": " + nfe.getMessage() + " — using fallback " + FALLBACK_MAX_REQUESTS);
+                }
+            } else {
+                System.out.println(ENV_MAX_REQUESTS + " not set, using default " + FALLBACK_MAX_REQUESTS);
+            }
+        } catch (Throwable t) {
+            System.err.println("Failed to load .env for HttpServerWorker: " + t.getMessage() + " — using fallbacks");
+        }
+
+        DEFAULT_KEEP_ALIVE_TIMEOUT_MS = keepAlive;
+        DEFAULT_MAX_REQUESTS = maxReq;
+    }
 
     public HttpServerWorker(Socket clientSocket, HttpServer server) {
         this.clientSocket = clientSocket;
