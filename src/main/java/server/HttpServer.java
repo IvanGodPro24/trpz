@@ -1,6 +1,5 @@
 package server;
 
-import mediator.DefaultServerMediator;
 import mediator.ServerMediator;
 import model.HttpRequest;
 import model.HttpResponse;
@@ -26,7 +25,7 @@ public class HttpServer {
     public HttpServer(int port, ServerMediator mediator) {
         this.port = port;
         this.state = new InitializingState();
-        this.mediator = mediator == null ? new DefaultServerMediator() : mediator;
+        this.mediator = mediator;
     }
 
     public synchronized void SetState(IServerState newState) {

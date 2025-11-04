@@ -5,6 +5,9 @@ import http.HttpRequestParser;
 import http.HttpResponseSerializer;
 import model.HttpRequest;
 import model.HttpResponse;
+import events.EventBus;
+import events.RequestEvent;
+import events.ResponseEvent;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,10 +57,33 @@ public class HttpServerWorker implements Runnable {
 
                 requestsHandled++;
 
-                HttpResponse response = server.HandleRequest(request);
+                EventBus bus = EventBus.getInstance();
+
+                try {
+                    bus.publish(new RequestEvent(request));
+                } catch (Throwable t) {
+                    System.err.println("EventBus publish Request failed: " + t.getMessage());
+                }
+
+                long start = System.nanoTime();
+                HttpResponse response;
+                try {
+                    response = server.HandleRequest(request);
+                } catch (Throwable t) {
+                    ErrorResponseCreator err = new ErrorResponseCreator();
+                    response = err.createResponse(500, "<h1>Internal Server Error</h1>");
+                }
+                long duration = Math.max(0L, System.nanoTime() - start);
+
                 if (response == null) {
                     ErrorResponseCreator err = new ErrorResponseCreator();
                     response = err.createResponse(500, "<h1>Internal Server Error</h1>");
+                }
+
+                try {
+                    bus.publish(new ResponseEvent(request, response, duration));
+                } catch (Throwable t) {
+                    System.err.println("EventBus publish Response failed: " + t.getMessage());
                 }
 
                 // Визначаємо політику keep-alive по запиту та версії HTTP

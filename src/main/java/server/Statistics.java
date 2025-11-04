@@ -36,8 +36,6 @@ public class Statistics {
             String timestamp = Instant.now().toString();
             repository.saveRequest(id, req.method(), req.url(), timestamp);
         }
-
-        System.out.println("Logged request: " + req.method() + " " + req.url() + " id=" + id);
     }
 
     public int getTotalRequests() {

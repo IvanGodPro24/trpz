@@ -4,11 +4,12 @@ import db.RequestsRepository;
 import model.HttpRequest;
 import model.HttpResponse;
 import p2p.PeerNetwork;
+import metrics.MetricsCollector;
 
 public class RequestHandler {
     private final Router router;
 
-    public RequestHandler(Statistics stats, RequestsRepository requestsRepo, PeerNetwork peerNetwork) {
+    public RequestHandler(Statistics stats, RequestsRepository requestsRepo, PeerNetwork peerNetwork, MetricsCollector metrics) {
         this.router = new Router();
 
         // templates
@@ -41,6 +42,12 @@ public class RequestHandler {
         this.router.registerExact("GET", "/home", staticPages);
         this.router.registerExact("GET", "/about", staticPages);
         this.router.registerExact("GET", "/stats", staticPages);
+
+        // metrics
+        if (metrics != null) {
+            MetricsController mc = new MetricsController(metrics);
+            this.router.registerExact("GET", "/metrics", mc);
+        }
     }
 
     public HttpResponse Handle(HttpRequest req) {

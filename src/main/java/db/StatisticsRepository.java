@@ -27,7 +27,6 @@ public class StatisticsRepository {
 
         try {
             collection.insertOne(doc);
-            System.out.println("Saved to MongoDB: id=" + id);
         } catch (Exception e) {
             if (!e.getMessage().contains("duplicate key")) {
                 System.err.println("Failed to save request: " + e.getMessage());

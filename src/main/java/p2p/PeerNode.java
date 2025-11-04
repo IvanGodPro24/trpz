@@ -4,13 +4,18 @@ import db.MongoDBConnection;
 import db.StatisticsRepository;
 import db.RequestsRepository;
 import db.PeersRepository;
+import db.MetricsRepository;
+import db.ResponseStatsRepository;
 import mediator.ConcreteServerMediator;
-import mediator.ServerMediator;
+import metrics.StatisticsPersister;
 import model.HttpResponse;
 import server.HttpServer;
 import server.RequestHandler;
 import server.Statistics;
 import io.github.cdimascio.dotenv.Dotenv;
+import metrics.MetricsCollector;
+import metrics.ResponseStatsPersister;
+import logging.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -24,6 +29,9 @@ public class PeerNode {
     private final Statistics stats;
     private final PeerNetwork peerNetwork;
     private final List<String> peers;
+    private final MetricsCollector metricsCollector;
+    private final ResponseStatsPersister responseStatsPersister;
+    private final StatisticsPersister statisticsPersister;
 
     public PeerNode(String name, int port, List<String> seedPeers) {
         this.name = name;
@@ -41,7 +49,17 @@ public class PeerNode {
                 MongoDBConnection.getDatabaseName()
         );
 
+        ResponseStatsRepository responseStatsRepo = new ResponseStatsRepository(
+                MongoDBConnection.getClient(),
+                MongoDBConnection.getDatabaseName()
+        );
+
         PeersRepository peersRepo = new PeersRepository(
+                MongoDBConnection.getClient(),
+                MongoDBConnection.getDatabaseName()
+        );
+
+        MetricsRepository metricsRepo = new MetricsRepository(
                 MongoDBConnection.getClient(),
                 MongoDBConnection.getDatabaseName()
         );
@@ -91,13 +109,16 @@ public class PeerNode {
 
         this.peerNetwork.setSelfInfo(selfInfo);
 
-        if (seedPeers != null) {
-                for (String s : seedPeers) peerNetwork.addPeer(s);
-        }
+        this.metricsCollector = new MetricsCollector(metricsRepo);
+        new Logger();
 
+        this.responseStatsPersister = new ResponseStatsPersister(responseStatsRepo);
+        this.statisticsPersister = new StatisticsPersister(this.stats);
 
-        RequestHandler handler = new RequestHandler(this.stats, requestsRepo, this.peerNetwork);
-        ServerMediator mediator = new ConcreteServerMediator(server, handler, stats);
+        RequestHandler handler = new RequestHandler(this.stats, requestsRepo, this.peerNetwork, this.metricsCollector);
+        new ConcreteServerMediator(server, handler);
+
+        if (seedPeers != null) for (String s : seedPeers) peerNetwork.addPeer(s);
     }
 
     public void start() {
@@ -109,6 +130,9 @@ public class PeerNode {
     public void stop() {
         server.Stop();
         peerNetwork.stop();
+        if (metricsCollector != null) metricsCollector.shutdown();
+        if (responseStatsPersister != null) responseStatsPersister.shutdown();
+        if (statisticsPersister != null) statisticsPersister.shutdown();
     }
 
     public void broadcastRequest(String path) {
