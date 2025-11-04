@@ -38,7 +38,6 @@ public class HttpServer {
 
         executorService = Executors.newFixedThreadPool(10);
 
-        // Запуск нового потоку
         serverThread = new Thread(this::listen, "ServerThread-" + port);
         serverThread.start();
     }

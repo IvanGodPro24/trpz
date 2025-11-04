@@ -25,7 +25,6 @@ public class HttpRequestParser {
 
         Map<String, String> headers = readHeaders(in);
 
-        // read body bytes
         byte[] bodyBytes = readRequestBodyBytes(in, headers);
         String body = null;
         if (bodyBytes != null) {

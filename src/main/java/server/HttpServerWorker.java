@@ -86,7 +86,6 @@ public class HttpServerWorker implements Runnable {
                     System.err.println("EventBus publish Response failed: " + t.getMessage());
                 }
 
-                // Визначаємо політику keep-alive по запиту та версії HTTP
                 String reqConnHeader = getHeaderIgnoreCase(request.headers(), "Connection");
                 String reqVersion = request.version() == null ? "HTTP/1.1" : request.version();
 

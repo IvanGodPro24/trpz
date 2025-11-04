@@ -31,7 +31,6 @@ public class Statistics {
         long id = generateId();
         ids.add(id);
 
-        // Зберігаємо в MongoDB
         if (repository != null) {
             String timestamp = Instant.now().toString();
             repository.saveRequest(id, req.method(), req.url(), timestamp);
@@ -49,7 +48,6 @@ public class Statistics {
             if (id == null) continue;
             if (ids.add(id)) {
                 added++;
-                // Зберігаємо отриманий ID в БД
                 if (repository != null) {
                     repository.saveRequest(id, "MERGED", "/synced", Instant.now().toString());
                 }

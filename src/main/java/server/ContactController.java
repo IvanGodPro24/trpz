@@ -167,15 +167,12 @@ public class ContactController implements IController {
                         return new TemplateResponseCreator().createResponse(200, out);
                     } else {
                         if (isPut) {
-                            // PUT
                             return new ErrorResponseCreator().createResponse(404, "<h1>Not Found</h1><p>id=" + escapeHtml(id) + "</p>");
                         } else {
-                            // POST
                             requestsRepo.saveContact(name, email, message, receivedAt, clientIp);
                         }
                     }
                 } else {
-                    // create new
                     requestsRepo.saveContact(name, email, message, receivedAt, clientIp);
                 }
             }
