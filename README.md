@@ -190,7 +190,7 @@ nodeA.start();
 nodeB.start();
 ```
 
-Nodes exchange statistics via /sync/stats `/sync/stats` and persist data in MongoDB.
+Nodes exchange statistics via `/sync/stats` and persist data in MongoDB.
 
 ---
 
